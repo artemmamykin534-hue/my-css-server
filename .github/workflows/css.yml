@@ -19,6 +19,6 @@ jobs:
         sleep 5
         echo "All tests passed!"
 
-    # Запуск удаленного доступа
-    - name: Setup Remote Connection Session
-      uses: mxschmitt/action-tmate@v3
+    # Замена tmate на более стабильный upterm
+    - name: Setup Upterm Session
+      uses: lhotari/action-upterm@v1
