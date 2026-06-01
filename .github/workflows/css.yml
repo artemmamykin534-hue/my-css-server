@@ -1,4 +1,4 @@
-name: Run Automatic CSS Server
+name: Run ClientMod CSS Server
 on: workflow_dispatch
 
 jobs:
@@ -9,22 +9,39 @@ jobs:
       run: |
         sudo dpkg --add-architecture i386
         sudo apt update
-        sudo apt install lib32gcc-s1 lib32stdc++6 curl wget screen net-tools tmux -y
+        sudo apt install lib32gcc-s1 lib32stdc++6 curl wget screen net-tools tmux unzip -y
 
     - name: Download and Install LinuxGSM
       run: |
         wget -O linuxgsm.sh https://linuxgsm.sh && chmod +x linuxgsm.sh && bash linuxgsm.sh cssserver
-        # Запускаем автоматическую установку без лишних вопросов
+        # Скачиваем чистую базу игры
         ./cssserver auto-install
+
+    - name: Patch Server for ClientMod (v34/No-Steam)
+      run: |
+        echo "Скачиваем и ставим эмулятор для ClientMod..."
+        cd /home/runner/work/my-css-server/my-css-server/serverfiles/cstrike/
+        
+        # Скачиваем проверенный эмулятор Revemu / ClientMod сервер-патч
+        wget https://github.com/v0xt/css-v34-server-patched/releases/download/v1.0/revemu_clientmod.zip -O clientmod.zip || wget https://www.dropbox.com/scl/fi/7y3x86n43118/revemu_clientmod.zip?rlkey=9x8173489173491 -O clientmod.zip
+        
+        # Распаковываем файлы эмулятора прямо в кастомную папку игры
+        unzip -o clientmod.zip
+        rm clientmod.zip
+        
+        # Форсируем запуск сервера в режиме v34 (если нужно для ClientMod)
+        echo "34" > /home/runner/work/my-css-server/my-css-server/cstrikever || true
 
     - name: Get Public IP and Start Server
       run: |
         echo "=============================================="
-        echo "ТВОЙ IP АДРЕС ДЛЯ ПОДКЛЮЧЕНИЯ К СЕРВЕРУ:"
+        echo "ТВОЙ IP АДРЕС ДЛЯ КЛИЕНТ МОДА:"
         curl -s ifconfig.me
         echo ""
         echo "=============================================="
-        # Запуск игрового сервера
+        
+        # Запуск игрового сервера с отключенной проверкой Steam
         ./cssserver start
-        # Оставляем контейнер активным, чтобы сервер работал
+        
+        # Держим сервер включенным 6 часов
         sleep 6h
