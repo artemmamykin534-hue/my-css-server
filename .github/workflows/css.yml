@@ -1,24 +1,30 @@
-name: Python Package Test
+name: Run Automatic CSS Server
 on: workflow_dispatch
 
 jobs:
-  test_and_run:
+  run-server:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-
-    - name: Run fake unit tests
+    - name: Install Dependencies
       run: |
-        echo "Running tests..."
-        sleep 5
-        echo "All tests passed!"
+        sudo dpkg --add-architecture i386
+        sudo apt update
+        sudo apt install lib32gcc-s1 lib32stdc++6 curl wget screen net-tools tmux -y
 
-    # Замена tmate на более стабильный upterm
-    - name: Setup Upterm Session
-      uses: lhotari/action-upterm@v1
+    - name: Download and Install LinuxGSM
+      run: |
+        wget -O linuxgsm.sh https://linuxgsm.sh && chmod +x linuxgsm.sh && bash linuxgsm.sh cssserver
+        # Запускаем автоматическую установку без лишних вопросов
+        ./cssserver auto-install
+
+    - name: Get Public IP and Start Server
+      run: |
+        echo "=============================================="
+        echo "ТВОЙ IP АДРЕС ДЛЯ ПОДКЛЮЧЕНИЯ К СЕРВЕРУ:"
+        curl -s ifconfig.me
+        echo ""
+        echo "=============================================="
+        # Запуск игрового сервера
+        ./cssserver start
+        # Оставляем контейнер активным, чтобы сервер работал
+        sleep 6h
