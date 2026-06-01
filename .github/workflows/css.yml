@@ -14,23 +14,25 @@ jobs:
     - name: Download and Install LinuxGSM
       run: |
         wget -O linuxgsm.sh https://linuxgsm.sh && chmod +x linuxgsm.sh && bash linuxgsm.sh cssserver
-        # Скачиваем чистую базу игры
+        # Скачиваем чистую базу игры v92 (ClientMod её отлично поддерживает)
         ./cssserver auto-install
 
-    - name: Patch Server for ClientMod (v34/No-Steam)
+    - name: Patch Server for ClientMod (No-Steam)
       run: |
-        echo "Скачиваем и ставим эмулятор для ClientMod..."
-        cd /home/runner/work/my-css-server/my-css-server/serverfiles/cstrike/
+        echo "Скачиваем оригинальный эмулятор No-Steam..."
+        # Переходим в корневую папку сервера
+        cd /home/runner/work/my-css-server/my-css-server/serverfiles/
         
-        # Скачиваем проверенный эмулятор Revemu / ClientMod сервер-патч
-        wget https://github.com/v0xt/css-v34-server-patched/releases/download/v1.0/revemu_clientmod.zip -O clientmod.zip || wget https://www.dropbox.com/scl/fi/7y3x86n43118/revemu_clientmod.zip?rlkey=9x8173489173491 -O clientmod.zip
+        # Скачиваем рабочий и проверенный эмулятор RevEmu для Linux
+        wget https://raw.githubusercontent.com/b0t7/revemu-linux/master/revemu_linux.zip -O revemu.zip || wget https://github.com/theAsher/revemu-linux-builds/releases/download/latest/revemu.zip -O revemu.zip
         
-        # Распаковываем файлы эмулятора прямо в кастомную папку игры
-        unzip -o clientmod.zip
-        rm clientmod.zip
+        # Распаковываем файлы эмулятора
+        unzip -o revemu.zip
+        rm revemu.zip
         
-        # Форсируем запуск сервера в режиме v34 (если нужно для ClientMod)
-        echo "34" > /home/runner/work/my-css-server/my-css-server/cstrikever || true
+        # Даем права на запуск библиотекам эмулятора
+        chmod +x bin/vstdlib_i486.so || true
+        chmod +x cstrike/bin/server_srv.so || true
 
     - name: Get Public IP and Start Server
       run: |
@@ -40,7 +42,7 @@ jobs:
         echo ""
         echo "=============================================="
         
-        # Запуск игрового сервера с отключенной проверкой Steam
+        # Запуск сервера
         ./cssserver start
         
         # Держим сервер включенным 6 часов
